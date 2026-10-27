@@ -1,0 +1,105 @@
+Quiero una explicación del  código por ejemplo:
+Interfaz de usuario:
+Comunicación con el servidor:
+Posibles mejoras, cuales serian.
+Servidor (server.py)
+import socket
+import json
+
+# Almacenamiento de notas (simulado en memoria)
+notes = []
+
+def handle_request(request):
+    """Procesa las solicitudes del cliente."""
+    global notes
+    try:
+        data = json.loads(request)
+        action = data.get("action")
+        
+        if action == "GET":
+            return json.dumps({"status": "success", "notes": notes})
+        
+        elif action == "POST":
+            new_note = data.get("note")
+            notes.append(new_note)
+            return json.dumps({"status": "success", "message": "Nota agregada."})
+        
+        elif action == "DELETE":
+            note_index = data.get("index")
+            if 0 <= note_index < len(notes):
+                deleted_note = notes.pop(note_index)
+                return json.dumps({"status": "success", "message": f"Nota '{deleted_note}' eliminada."})
+            else:
+                return json.dumps({"status": "error", "message": "Índice inválido."})
+        
+        else:
+            return json.dumps({"status": "error", "message": "Acción no válida."})
+    
+    except Exception as e:
+        return json.dumps({"status": "error", "message": str(e)})
+
+def start_server():
+    """Inicia el servidor en localhost:5000."""
+    server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    server_socket.bind(("localhost", 5000))
+    server_socket.listen(1)
+    print("Servidor escuchando en puerto 5000...")
+    
+    while True:
+        client_socket, addr = server_socket.accept()
+        print(f"Conexión aceptada desde {addr}")
+        
+        request = client_socket.recv(1024).decode()
+        response = handle_request(request)
+        client_socket.send(response.encode())
+        
+        client_socket.close()
+
+if __name__ == "__main__":
+    start_server()
+
+Cliente (client.py)
+import socket
+import json
+
+def send_request(action, note=None, index=None):
+    """Envía una solicitud al servidor."""
+    request_data = {"action": action}
+    if note: request_data["note"] = note
+    if index is not None: request_data["index"] = index
+    
+    client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    client_socket.connect(("localhost", 5000))
+    client_socket.send(json.dumps(request_data).encode())
+    
+    response = client_socket.recv(1024).decode()
+    client_socket.close()
+    return json.loads(response)
+
+def main():
+    while True:
+        print("\n1. Ver notas\n2. Agregar nota\n3. Eliminar nota\n4. Salir")
+        choice = input("Seleccione una opción: ")
+        
+        if choice == "1":
+            response = send_request("GET")
+            if response["status"] == "success":
+                print("\nNotas:", response.get("notes", []))
+            else:
+                print("Error:", response["message"])
+        
+        elif choice == "2":
+            note = input("Ingrese la nota: ")
+            response = send_request("POST", note=note)
+            print(response["message"])
+        
+        elif choice == "3":
+            index = int(input("Índice de la nota a eliminar: "))
+            response = send_request("DELETE", index=index)
+            print(response["message"])
+        
+        elif choice == "4":
+            break
+
+if __name__ == "__main__":
+    main()

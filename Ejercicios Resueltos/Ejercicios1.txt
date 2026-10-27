@@ -1,0 +1,66 @@
+Estimados estudiantes, dejo acá los ejercicios resueltos, y el ejercicio de la clase 1.
+
+Clase 1
+
+Problema 1: Contando en paralelo
+
+Escribe un programa en Python que cree dos hilos. El primer hilo debe contar los números del 1 al 5, mientras que el segundo hilo debe contar los números del 6 al 10. Los números de cada hilo deben imprimirse de forma concurrente, pero no necesariamente en el mismo orden.
+
+ Respuesta:
+
+import threading
+import time
+ 
+def contar_numeros(nombre, inicio):
+    for i in range(5):
+        time.sleep(1)  # Simula un trabajo que toma tiempo (1 segundo por número)
+        print(f"{nombre} está contando: {inicio + i}")
+ 
+hilo1 = threading.Thread(target=contar_numeros, args=("Hilo 1", 1))
+hilo2 = threading.Thread(target=contar_numeros, args=("Hilo 2", 6))
+ 
+hilo1.start()
+hilo2.start()
+ 
+hilo1.join()
+hilo2.join()
+ 
+print("¡Contador completo!")
+--------------------------------------------------------------
+Problema 2: Sincronización de hilos
+Enunciado:
+Crea un programa que simule dos hilos sumando números. Ambos hilos deben sumar números del 1 al 5, pero no deben imprimir el resultado de la suma hasta que ambos hayan completado la suma de los 5 números. Utiliza una variable de condición para asegurar que los resultados solo se impriman una vez que ambos hilos hayan terminado su tarea.
+
+ Respuesta:
+
+import threading
+ 
+# Variable de condición para sincronización
+condicion = threading.Condition()
+ 
+# Variables globales
+resultados = []
+ 
+def sumar_numeros(nombre):
+    total = 0
+    for i in range(1, 6):
+        total += i
+    with condicion:
+        resultados.append(f"{nombre} sumó: {total}")
+        condicion.notify_all()  # Notificar que se ha terminado la suma
+ 
+def imprimir_resultados():
+    with condicion:
+        while len(resultados) < 2:
+            condicion.wait()  # Esperar hasta que ambos hilos hayan terminado
+        for resultado in resultados:
+            print(resultado)
+ 
+hilo1 = threading.Thread(target=sumar_numeros, args=("Hilo 1",))
+hilo2 = threading.Thread(target=sumar_numeros, args=("Hilo 2",))
+ 
+hilo1.start()
+hilo2.start()
+ 
+# Imprimir los resultados una vez que ambos hilos hayan terminado
+imprimir_resultados()

@@ -1,0 +1,138 @@
+Código del Servidor (servidor.py)
+
+import socket
+
+
+
+# 1. Crear el socket (Familia IPv4, Protocolo TCP/Stream)
+
+server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+
+
+
+# 2. Buena práctica: Permitir reutilizar el puerto inmediatamente al reiniciar
+
+server_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+
+
+
+# 3. Definir y vincular (Bind) a una IP y Puerto
+
+HOST = '127.0.0.1'  # Solo acepta conexiones locales (seguridad para pruebas)
+
+PORT = 5000         # Puerto no privilegiado (> 1024)
+
+server_socket.bind((HOST, PORT))
+
+
+
+# 4. Poner en modo escucha (Listen). Backlog de 1 conexión en espera
+
+server_socket.listen(1)
+
+print(f"[*] Servidor iniciado. Escuchando en {HOST}:{PORT}...")
+
+
+
+# 5. Aceptar conexión (Bloqueante: espera hasta que un cliente se conecte)
+
+client_socket, client_address = server_socket.accept()
+
+print(f"[+] Nueva conexión establecida con: {client_address}")
+
+
+
+# 6. Recibir datos del cliente (Máximo 1024 bytes)
+
+datos_recibidos = client_socket.recv(1024)
+
+
+
+# 7. Decodificar los bytes a texto legible (UTF-8)
+
+mensaje_cliente = datos_recibidos.decode('utf-8')
+
+print(f"[<-] Mensaje recibido del cliente: '{mensaje_cliente}'")
+
+
+
+# 8. Preparar y enviar la confirmación (Codificar texto a bytes)
+
+respuesta = f"Confirmación: Servidor recibió tu mensaje '{mensaje_cliente}' correctamente."
+
+client_socket.send(respuesta.encode('utf-8'))
+
+print("[->] Respuesta de confirmación enviada al cliente.")
+
+
+
+# 9. Cerrar conexiones y liberar recursos del Sistema Operativo
+
+client_socket.close()
+
+server_socket.close()
+
+print("[*] Servidor apagado y recursos liberados.")
+
+
+
+2. Código del Cliente (cliente.py)
+import socket
+
+
+
+# 1. Crear el socket del cliente (IPv4, TCP)
+
+client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+
+
+
+# 2. Definir el destino al que queremos conectarnos
+
+HOST = '127.0.0.1'
+
+PORT = 5000
+
+
+
+# 3. Intentar conectar (con manejo de errores para evitar crashes feos)
+
+try:
+
+    client_socket.connect((HOST, PORT))
+
+    print("[+] Conectado exitosamente al servidor.")
+
+except ConnectionRefusedError:
+
+    print("[-] Error: No se pudo conectar. ¿Está el servidor encendido?")
+
+    exit() # Termina el programa de forma segura
+
+
+
+# 4. Preparar y enviar el mensaje al servidor
+
+mensaje_a_enviar = "Hola servidor, este es un mensaje de prueba de la Clase 5"
+
+client_socket.send(mensaje_a_enviar.encode('utf-8'))
+
+print(f"[->] Mensaje enviado: '{mensaje_a_enviar}'")
+
+
+
+# 5. Esperar y recibir la respuesta del servidor
+
+datos_respuesta = client_socket.recv(1024)
+
+respuesta_servidor = datos_respuesta.decode('utf-8')
+
+print(f"[<-] Respuesta del servidor: '{respuesta_servidor}'")
+
+
+
+# 6. Cerrar la conexión y liberar recursos
+
+client_socket.close()
+
+print("[*] Conexión cerrada por el cliente.")

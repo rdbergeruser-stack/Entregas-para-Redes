@@ -1,0 +1,47 @@
+Network Working Group                                      C. Partridge
+Request for Comments: 1151                 BBN Systems and Technologies
+Updates: RFC 908                                              R. Hinden
+                                               BBN Communications Corp.
+                                                             April 1990
+
+
+             Version 2 of the Reliable Data Protocol (RDP)
+
+Status of this Memo
+
+   This RFC suggests several updates to the specification of the
+   Reliable Data Protocol (RDP) in RFC-908 based on experience with the
+   protocol.  This revised version of the protocol is experimental.
+
+   Distribution of this memo is unlimited.
+
+Introduction
+
+   Experiments in 1986 and 1987 turned up some ambiguities and problems
+   with the RDP specification.  At the time, it was hoped that the
+   authors might find the time to revise the entire RDP specification to
+   fix these problems, however given the limited demand for RDP
+   implementations, the authors were never able to justify the time
+   involved in revising the spec.  This document lists the changes that
+   we believe are appropriate to make to RDP version 1.
+
+   Readers are expected to be familiar with RFC-908.
+
+Changes To The Protocol Header
+
+   There are three changes to the protocol header: the checksum
+   algorithm has been changed, the port size increased, and the version
+   number incremented.  The new header format is shown in Figure 1.
+
+   The major discovery during the testing of the protocol is that cost
+   of computing the the RDP checksum proved surprisingly variable; its
+   performance was more heavily affected by the host's data
+   representation than anticipated.  Optimized checksum implementations
+   on two comparable hardware bases gave performance that differed by a
+   factor of five.  Since the speed of the checksum is a key factor in
+   the performance of the protocol itself, this variation caused a
+   noticeable difference in throughput.
+
+   The wide variation in performance on comparable machines was felt to
+   be undesirable, so the checksum has been changed.  RDP now uses the
+   16-bit TCP checksum, which is specified on page 16 of RFC-793.

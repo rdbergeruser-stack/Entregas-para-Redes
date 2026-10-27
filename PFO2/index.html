@@ -1,0 +1,652 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PFO 2 - Sistema de Usuarios | IFTS N.° 29 - Programación sobre Redes</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #0f172a;
+            --card-bg: #1e293b;
+            --accent: #38bdf8;
+            --accent-hover: #0284c7;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --border: #334155;
+            --input-bg: #0f172a;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background: var(--bg-color);
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            padding: 24px;
+        }
+
+        header {
+            max-width: 1000px;
+            margin: 0 auto 30px auto;
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 16px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .title-group h1 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--text-main);
+        }
+
+        .title-group p {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            margin-top: 4px;
+        }
+
+        .badge-session {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 16px;
+            border-radius: 9999px;
+            background: rgba(56, 189, 248, 0.1);
+            border: 1px solid rgba(56, 189, 248, 0.3);
+            font-size: 0.88rem;
+            color: var(--accent);
+            font-weight: 600;
+        }
+
+        .badge-session.active {
+            background: rgba(16, 185, 129, 0.15);
+            border-color: rgba(16, 185, 129, 0.4);
+            color: var(--success);
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background-color: currentColor;
+        }
+
+        main {
+            max-width: 1000px;
+            margin: 0 auto;
+            width: 100%;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+            flex-grow: 1;
+        }
+
+        @media (max-width: 768px) {
+            main {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .card {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .card.full-width {
+            grid-column: 1 / -1;
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .card-title {
+            font-size: 1.15rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .card-badge {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.75rem;
+            padding: 3px 8px;
+            border-radius: 6px;
+            font-weight: 600;
+            background: rgba(255, 255, 255, 0.08);
+            color: var(--text-muted);
+        }
+
+        .badge-post {
+            background: rgba(16, 185, 129, 0.2);
+            color: var(--success);
+        }
+
+        .badge-get {
+            background: rgba(56, 189, 248, 0.2);
+            color: var(--accent);
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        label {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+        }
+
+        input {
+            width: 100%;
+            padding: 10px 14px;
+            background: var(--input-bg);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            color: var(--text-main);
+            font-size: 0.95rem;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        input:focus {
+            border-color: var(--accent);
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 11px 18px;
+            border-radius: 8px;
+            font-size: 0.92rem;
+            font-weight: 600;
+            border: none;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-primary {
+            background: var(--accent);
+            color: #0f172a;
+        }
+
+        .btn-primary:hover {
+            background: var(--accent-hover);
+            color: #ffffff;
+        }
+
+        .btn-danger {
+            background: rgba(239, 68, 68, 0.15);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            color: var(--danger);
+        }
+
+        .btn-danger:hover {
+            background: var(--danger);
+            color: white;
+        }
+
+        .btn-secondary {
+            background: #334155;
+            color: var(--text-main);
+        }
+
+        .btn-secondary:hover {
+            background: #475569;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 10px;
+        }
+
+        .alert {
+            padding: 12px 14px;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            display: none;
+            line-height: 1.4;
+        }
+
+        .alert-success {
+            background: rgba(16, 185, 129, 0.15);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            color: var(--success);
+        }
+
+        .alert-error {
+            background: rgba(239, 68, 68, 0.15);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            color: var(--danger);
+        }
+
+        .alert-info {
+            background: rgba(56, 189, 248, 0.15);
+            border: 1px solid rgba(56, 189, 248, 0.3);
+            color: var(--accent);
+        }
+
+        /* Tabla de Usuarios */
+        .table-responsive {
+            overflow-x: auto;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+            font-size: 0.9rem;
+        }
+
+        th {
+            background: rgba(15, 23, 42, 0.6);
+            padding: 12px 16px;
+            color: var(--text-muted);
+            font-weight: 600;
+            border-bottom: 1px solid var(--border);
+        }
+
+        td {
+            padding: 12px 16px;
+            border-bottom: 1px solid rgba(51, 65, 85, 0.5);
+            color: var(--text-main);
+        }
+
+        tr:last-child td {
+            border-bottom: none;
+        }
+
+        /* Consola de logs */
+        .console-card {
+            background: #020617;
+            border: 1px solid #1e293b;
+            border-radius: 12px;
+            padding: 16px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.82rem;
+            margin-top: 24px;
+            grid-column: 1 / -1;
+        }
+
+        .console-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+            color: var(--text-muted);
+            border-bottom: 1px solid #1e293b;
+            padding-bottom: 8px;
+        }
+
+        .console-logs {
+            max-height: 160px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .log-entry {
+            display: flex;
+            gap: 12px;
+        }
+
+        .log-time { color: #64748b; }
+        .log-status-200, .log-status-201 { color: #34d399; }
+        .log-status-400, .log-status-401, .log-status-409 { color: #f87171; }
+        .log-msg { color: #e2e8f0; }
+
+        footer {
+            max-width: 1000px;
+            margin: 30px auto 0 auto;
+            text-align: center;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="title-group">
+            <h1>Sistema de Gestión de Usuarios</h1>
+            <p>PFO 2 - Programación sobre Redes (3.° D) | <strong>IFTS N.° 29</strong> | Alumno: Rodrigo Berger</p>
+        </div>
+        <div id="sessionBadge" class="badge-session">
+            <span class="status-dot"></span>
+            <span id="sessionText">Sesión no iniciada</span>
+        </div>
+    </header>
+
+    <main>
+        <!-- TARJETA 1: REGISTRO -->
+        <section class="card">
+            <div class="card-header">
+                <h2 class="card-title">1. Registrar Usuario</h2>
+                <span class="card-badge badge-post">POST /registro</span>
+            </div>
+            <p style="font-size:0.85rem; color:var(--text-muted);">
+                Almacena el usuario con contraseña hasheada en SQLite (nunca en texto plano).
+            </p>
+            <form id="formRegistro" onsubmit="handleRegistro(event)">
+                <div class="form-group">
+                    <label for="regUsuario">Nombre de usuario</label>
+                    <input type="text" id="regUsuario" placeholder="Ej: nuevo_usuario" required>
+                </div>
+                <div class="form-group" style="margin-top:12px;">
+                    <label for="regContrasena">Contraseña</label>
+                    <input type="password" id="regContrasena" placeholder="••••••••" required>
+                </div>
+                <button type="submit" class="btn btn-primary" style="margin-top:16px; width: 100%;">
+                    Crear Usuario
+                </button>
+            </form>
+            <div id="alertRegistro" class="alert"></div>
+        </section>
+
+        <!-- TARJETA 2: LOGIN -->
+        <section class="card">
+            <div class="card-header">
+                <h2 class="card-title">2. Iniciar Sesión</h2>
+                <span class="card-badge badge-post">POST /login</span>
+            </div>
+            <p style="font-size:0.85rem; color:var(--text-muted);">
+                Verifica credenciales contra el hash en base de datos para habilitar acceso.
+            </p>
+            <form id="formLogin" onsubmit="handleLogin(event)">
+                <div class="form-group">
+                    <label for="loginUsuario">Nombre de usuario</label>
+                    <input type="text" id="loginUsuario" placeholder="Ej: Rodrigo" required>
+                </div>
+                <div class="form-group" style="margin-top:12px;">
+                    <label for="loginContrasena">Contraseña</label>
+                    <input type="password" id="loginContrasena" placeholder="••••••••" required>
+                </div>
+                <div class="btn-group" style="margin-top:16px;">
+                    <button type="submit" class="btn btn-primary" style="flex:1;">
+                        Iniciar Sesión
+                    </button>
+                    <button type="button" class="btn btn-danger" onclick="handleLogout()">
+                        Salir
+                    </button>
+                </div>
+            </form>
+            <div id="alertLogin" class="alert"></div>
+        </section>
+
+        <!-- TARJETA 3: LISTADO DE USUARIOS (PROTEGIDO) -->
+        <section class="card full-width">
+            <div class="card-header">
+                <div class="card-title">
+                    <span>3. Listado de Usuarios Registrados</span>
+                </div>
+                <div style="display:flex; gap:10px; align-items:center;">
+                    <span class="card-badge badge-get">GET /usuarios</span>
+                    <button class="btn btn-secondary" onclick="cargarUsuarios()">
+                        ↻ Actualizar Listado
+                    </button>
+                </div>
+            </div>
+
+            <div id="alertUsuarios" class="alert"></div>
+
+            <div class="table-responsive">
+                <table>
+                    <thead>
+                        <tr>
+                            <th style="width: 80px;"># ID</th>
+                            <th>Usuario</th>
+                            <th>Fecha de Registro</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tablaUsuariosBody">
+                        <tr>
+                            <td colspan="3" style="text-align: center; color: var(--text-muted); padding: 24px;">
+                                Inicie sesión y haga clic en "Actualizar Listado" para consultar los usuarios registrados.
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- CONSOLA DE AUDITORÍA HTTP -->
+        <div class="console-card">
+            <div class="console-header">
+                <span>CONSOLA DE PETICIONES HTTP (REST API)</span>
+                <span id="apiUrlDisplay">API: http://localhost:5000</span>
+            </div>
+            <div class="console-logs" id="consoleLogs">
+                <div class="log-entry">
+                    <span class="log-time">[00:00:00]</span>
+                    <span class="log-msg">Listo para enviar solicitudes a la API.</span>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <p>Programación sobre Redes (3.° D) | <strong>IFTS N.° 29</strong> | Alumno: Rodrigo Berger</p>
+    </footer>
+
+    <script>
+        const API_URL = "http://localhost:5000";
+
+        // Estado de la sesión actual en memoria
+        let sesion = {
+            usuario: null,
+            contrasena: null
+        };
+
+        function logHttp(metodo, endpoint, status, mensaje) {
+            const now = new Date().toLocaleTimeString();
+            const consoleBox = document.getElementById("consoleLogs");
+            const entry = document.createElement("div");
+            entry.className = "log-entry";
+            entry.innerHTML = `
+                <span class="log-time">[${now}]</span>
+                <strong style="color:var(--accent);">${metodo} ${endpoint}</strong>
+                <span class="log-status-${status}">[${status}]</span>
+                <span class="log-msg">${mensaje}</span>
+            `;
+            consoleBox.prepend(entry);
+        }
+
+        function showAlert(elemId, tipo, texto) {
+            const el = document.getElementById(elemId);
+            el.className = `alert alert-${tipo}`;
+            el.innerText = texto;
+            el.style.display = "block";
+        }
+
+        function hideAlert(elemId) {
+            const el = document.getElementById(elemId);
+            el.style.display = "none";
+        }
+
+        function actualizarBadgeSesion() {
+            const badge = document.getElementById("sessionBadge");
+            const text = document.getElementById("sessionText");
+            if (sesion.usuario) {
+                badge.classList.add("active");
+                text.innerText = `Conectado como: ${sesion.usuario}`;
+            } else {
+                badge.classList.remove("active");
+                text.innerText = `Sesión no iniciada`;
+            }
+        }
+
+        // 1. REGISTRO
+        async function handleRegistro(e) {
+            e.preventDefault();
+            hideAlert("alertRegistro");
+            const usuario = document.getElementById("regUsuario").value.trim();
+            const contrasena = document.getElementById("regContrasena").value.trim();
+
+            try {
+                const res = await fetch(`${API_URL}/registro`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ usuario, "contraseña": contrasena })
+                });
+                const data = await res.json();
+                logHttp("POST", "/registro", res.status, data.mensaje || "Respuesta recibida");
+
+                if (res.status === 201) {
+                    showAlert("alertRegistro", "success", `✓ ${data.mensaje}`);
+                    document.getElementById("formRegistro").reset();
+                } else {
+                    showAlert("alertRegistro", "error", `✗ ${data.mensaje || 'Error al registrar'}`);
+                }
+            } catch (err) {
+                showAlert("alertRegistro", "error", `✗ No se pudo conectar con el servidor en ${API_URL}`);
+                logHttp("POST", "/registro", "ERR", err.message);
+            }
+        }
+
+        // 2. LOGIN
+        async function handleLogin(e) {
+            e.preventDefault();
+            hideAlert("alertLogin");
+            const usuario = document.getElementById("loginUsuario").value.trim();
+            const contrasena = document.getElementById("loginContrasena").value.trim();
+
+            try {
+                const res = await fetch(`${API_URL}/login`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ usuario, "contraseña": contrasena })
+                });
+                const data = await res.json();
+                logHttp("POST", "/login", res.status, data.mensaje || "Respuesta recibida");
+
+                if (res.status === 200) {
+                    sesion.usuario = usuario;
+                    sesion.contrasena = contrasena;
+                    actualizarBadgeSesion();
+                    showAlert("alertLogin", "success", `✓ ${data.mensaje}`);
+                    // Cargar listado automáticamente al loguearse
+                    cargarUsuarios();
+                } else {
+                    showAlert("alertLogin", "error", `✗ ${data.mensaje || 'Credenciales inválidas'}`);
+                }
+            } catch (err) {
+                showAlert("alertLogin", "error", `✗ No se pudo conectar con el servidor en ${API_URL}`);
+                logHttp("POST", "/login", "ERR", err.message);
+            }
+        }
+
+        // CERRAR SESIÓN
+        function handleLogout() {
+            if (!sesion.usuario) {
+                showAlert("alertLogin", "info", "No hay ninguna sesión activa.");
+                return;
+            }
+            const exUsuario = sesion.usuario;
+            sesion.usuario = null;
+            sesion.contrasena = null;
+            actualizarBadgeSesion();
+            showAlert("alertLogin", "info", `Sesión de '${exUsuario}' cerrada.`);
+            document.getElementById("formLogin").reset();
+            
+            // Vaciar tabla
+            document.getElementById("tablaUsuariosBody").innerHTML = `
+                <tr>
+                    <td colspan="3" style="text-align: center; color: var(--text-muted); padding: 24px;">
+                        Sesión cerrada. Inicie sesión para ver la lista de usuarios.
+                    </td>
+                </tr>
+            `;
+            hideAlert("alertUsuarios");
+        }
+
+        // 3. LISTAR USUARIOS (GET /usuarios)
+        async function cargarUsuarios() {
+            hideAlert("alertUsuarios");
+            const tbody = document.getElementById("tablaUsuariosBody");
+
+            if (!sesion.usuario) {
+                showAlert("alertUsuarios", "error", "Acceso denegado: El endpoint GET /usuarios requiere tener sesión iniciada.");
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="3" style="text-align: center; color: var(--danger); padding: 24px;">
+                            🔒 Endpoint protegido (HTTP 401 Unauthorized). Debe iniciar sesión primero.
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+
+            try {
+                const res = await fetch(`${API_URL}/usuarios`, {
+                    method: "GET",
+                    headers: {
+                        "X-Usuario": sesion.usuario,
+                        "X-Contrasena": sesion.contrasena
+                    }
+                });
+                const data = await res.json();
+                logHttp("GET", "/usuarios", res.status, `Retornó ${data.total_usuarios || 0} usuarios`);
+
+                if (res.status === 200) {
+                    const lista = data.usuarios || [];
+                    if (lista.length === 0) {
+                        tbody.innerHTML = `
+                            <tr>
+                                <td colspan="3" style="text-align: center; color: var(--text-muted); padding: 24px;">
+                                    No hay usuarios registrados en la base de datos.
+                                </td>
+                            </tr>
+                        `;
+                    } else {
+                        tbody.innerHTML = lista.map(u => `
+                            <tr>
+                                <td><strong>#${u.id}</strong></td>
+                                <td><span style="color:var(--accent); font-weight:600;">${u.usuario}</span></td>
+                                <td>${u.fecha_registro}</td>
+                            </tr>
+                        `).join("");
+                        showAlert("alertUsuarios", "success", `✓ Listado cargado con éxito. Total: ${data.total_usuarios} usuarios.`);
+                    }
+                } else {
+                    showAlert("alertUsuarios", "error", `✗ ${data.mensaje || 'Error al obtener usuarios'}`);
+                }
+            } catch (err) {
+                showAlert("alertUsuarios", "error", `✗ Error al conectar con ${API_URL}`);
+                logHttp("GET", "/usuarios", "ERR", err.message);
+            }
+        }
+    </script>
+</body>
+</html>

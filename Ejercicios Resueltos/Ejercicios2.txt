@@ -1,0 +1,88 @@
+Les dejo el ejercicio resuelto de la clase.
+Código del Servidor Distribuido
+Cada servidor tendrá:
+
+Un endpoint para subir/descargar archivos.
+
+Lógica para replicar archivos en otros servidores.
+
+1. Servidor Principal (server1.py)
+from flask import Flask, request, jsonify
+import os
+import requests
+
+app = Flask(__name__)
+FILES_DIR = "server1_files"
+REPLICA_SERVERS = ["http://localhost:5001", "http://localhost:5002"]  # Otros servidores
+
+os.makedirs(FILES_DIR, exist_ok=True)
+
+@app.route('/upload', methods=['POST'])
+def upload():
+    file = request.files['file']
+    file.save(os.path.join(FILES_DIR, file.filename))
+    
+    # Replicar el archivo en otros servidores
+    for server in REPLICA_SERVERS:
+        requests.post(f"{server}/replicate", files={'file': open(os.path.join(FILES_DIR, file.filename, 'rb')})
+    
+    return jsonify({"status": "File uploaded and replicated!"})
+
+@app.route('/download/<filename>', methods=['GET'])
+def download(filename):
+    file_path = os.path.join(FILES_DIR, filename)
+    if os.path.exists(file_path):
+        return open(file_path, 'rb').read()
+    else:
+        return jsonify({"error": "File not found"}), 404
+
+@app.route('/replicate', methods=['POST'])
+def replicate():
+    file = request.files['file']
+    file.save(os.path.join(FILES_DIR, file.filename))
+    return jsonify({"status": "Replication successful"})
+
+if __name__ == '__main__':
+    app.run(port=5000)
+2. Servidores Réplica (server2.py y server3.py)
+
+Modifica los puertos y directorios:
+
+# server2.py
+FILES_DIR = "server2_files"
+REPLICA_SERVERS = ["http://localhost:5000", "http://localhost:5002"]
+app.run(port=5001)
+
+# server3.py
+FILES_DIR = "server3_files"
+REPLICA_SERVERS = ["http://localhost:5000", "http://localhost:5001"]
+app.run(port=5002)
+Prueba del Sistema
+
+1 Iniciar servidores:
+
+python server1.py & python server2.py & python server3.py
+
+2 Subir un archivo:
+
+curl -X POST -F "file=@test.txt" http://localhost:5000/upload
+
+El archivo test.txt se guarda en server1 y se replica en server2 y server3.
+
+
+
+3 Descargar desde cualquier servidor (incluso si uno falla):
+
+curl http://localhost:5001/download/test.txt  # Descarga desde server2
+Resultado Esperado
+Tolerancia a fallos: Si server1 se cae, los archivos están disponibles en server2 o server3.
+
+Sincronización: Los archivos se replican automáticamente al subirse.
+
+Escalabilidad: Puedes agregar más servidores modificando REPLICA_SERVERS.
+graph LR
+    Usuario -->|Sube archivo| Server1
+    Server1 -->|Replica| Server2
+    Server1 -->|Replica| Server3
+    Usuario -->|Descarga| Server2
+    Usuario -->|Descarga| Server3

@@ -1,0 +1,1 @@
+Trabajo sobresaliente. Modularización impecable, threading con daemon=True, manejo de errores exhaustivo y un README muy completo con guía de ejecución y casos de prueba. El detalle de que cada hilo abra su propia conexión a SQLite demuestra comprensión profunda del problema de concurrencia.

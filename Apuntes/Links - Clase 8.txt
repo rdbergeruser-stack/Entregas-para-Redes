@@ -1,0 +1,1 @@
+https://docs.aws.amazon.com/es_es/wellarchitected/latest/security-pillar/shared-responsibility.html
